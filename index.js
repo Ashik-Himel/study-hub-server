@@ -10,7 +10,10 @@ const port = process.env.PORT || 5001;
 
 app.use(express.json());
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://study-hub-1.web.app'],
+  origin: [
+    // 'http://localhost:5173',
+    'https://study-hub-1.web.app'
+  ],
   credentials: true
 }));
 app.use(cookieParser());
@@ -45,8 +48,8 @@ async function run() {
       const token = jwt.sign(req.body, process.env.JWT_SECRET, {expiresIn: "3d"});
       res.cookie("token", token, {
         httpOnly: true,
-        secure: false,
-        // sameSite: "none",
+        secure: true,
+        sameSite: "none",
         maxAge: 3 * 24 * 60 * 60 * 1000
       }).sendStatus(200).send("Ok");
     })
