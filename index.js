@@ -43,6 +43,7 @@ async function run() {
   try {
     const database = client.db('study-hub');
     const assignmentCollection = database.collection("assignments");
+    const submittedAssignmentCollection = database.collection("submitted-assignments");
 
     app.post('/login', (req, res) => {
       const token = jwt.sign(req.body, process.env.JWT_SECRET, {expiresIn: "3d"});
@@ -72,6 +73,25 @@ async function run() {
     })
     app.post('/assignments', verify, async(req, res) => {
       const result = await assignmentCollection.insertOne(req.body);
+      res.send(result);
+    })
+
+    app.get('/submitted-assignments', verify, async(req, res) => {
+      const filter = {status: "pending"};
+      const result = await submittedAssignmentCollection.find(filter).toArray();
+      res.send(result);
+    })
+    app.post('/submitted-assignments', verify, async(req,res) => {
+      const result = await submittedAssignmentCollection.insertOne(req.body);
+      res.send(result);
+    })
+    app.put('/submitted-assignments', verify, async(req, res) => {
+      const id = req.query.id;
+      const filter = {_id: new ObjectId(id)}
+      const body = {
+        $set: req.body
+      }
+      const result = await submittedAssignmentCollection.updateOne(filter, body)
       res.send(result);
     })
 
