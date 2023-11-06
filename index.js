@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
@@ -11,8 +11,8 @@ const port = process.env.PORT || 5001;
 app.use(express.json());
 app.use(cors({
   origin: [
-    // 'http://localhost:5173',
-    'https://study-hub-1.web.app'
+    'http://localhost:5173',
+    // 'https://study-hub-1.web.app'
   ],
   credentials: true
 }));
@@ -48,15 +48,28 @@ async function run() {
       const token = jwt.sign(req.body, process.env.JWT_SECRET, {expiresIn: "3d"});
       res.cookie("token", token, {
         httpOnly: true,
-        secure: true,
-        sameSite: "none",
+        secure: false,
+        // sameSite: "none",
         maxAge: 3 * 24 * 60 * 60 * 1000
       }).sendStatus(200).send("Ok");
     })
-    app.get('/logout', (req, res) => {
+    app.get('/logout', verify, (req, res) => {
       res.clearCookie('token').sendStatus(200).send("Ok")
     })
 
+    app.get('/assignments', async(req, res) => {
+      let filter = {}
+      if (req.query.level !== "All") {
+        filter = {difficultyLevel: req.query.level};
+      }
+      const result = await assignmentCollection.find(filter).project({_id: 1, thumbnail: 1, title: 1, marks: 1, difficultyLevel: 1}).toArray();
+      res.send(result);
+    })
+    app.get('/assignments/:id', verify, async(req, res) => {
+      const filter = {_id: new ObjectId(req.params.id)}
+      const result = await assignmentCollection.findOne(filter);
+      res.send(result);
+    })
     app.post('/assignments', verify, async(req, res) => {
       const result = await assignmentCollection.insertOne(req.body);
       res.send(result);
