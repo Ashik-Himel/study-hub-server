@@ -95,6 +95,13 @@ async function run() {
       res.send(result);
     })
 
+    app.get('/my-assignments', verify, async(req, res) => {
+      const email = req.headers.authorization;
+      const filter = {authorEmail: email}
+      const result = await submittedAssignmentCollection.find(filter).toArray();
+      res.send(result);
+    })
+
     await client.db("admin").command({ ping: 1 });
     console.log("MongoDB Connected !!!");
   } finally {
