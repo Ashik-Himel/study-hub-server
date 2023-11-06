@@ -11,8 +11,8 @@ const port = process.env.PORT || 5001;
 app.use(express.json());
 app.use(cors({
   origin: [
-    'http://localhost:5173',
-    // 'https://study-hub-1.web.app'
+    // 'http://localhost:5173',
+    'https://study-hub-1.web.app'
   ],
   credentials: true
 }));
@@ -49,8 +49,8 @@ async function run() {
       const token = jwt.sign(req.body, process.env.JWT_SECRET, {expiresIn: "3d"});
       res.cookie("token", token, {
         httpOnly: true,
-        secure: false,
-        // sameSite: "none",
+        secure: true,
+        sameSite: "none",
         maxAge: 3 * 24 * 60 * 60 * 1000
       }).sendStatus(200).send("Ok");
     })
@@ -63,7 +63,7 @@ async function run() {
       if (req.query.level !== "All") {
         filter = {difficultyLevel: req.query.level};
       }
-      const result = await assignmentCollection.find(filter).project({_id: 1, thumbnail: 1, title: 1, marks: 1, difficultyLevel: 1}).toArray();
+      const result = await assignmentCollection.find(filter).project({_id: 1, thumbnail: 1, title: 1, marks: 1, difficultyLevel: 1, author: 1}).toArray();
       res.send(result);
     })
     app.get('/assignments/:id', verify, async(req, res) => {
@@ -82,6 +82,12 @@ async function run() {
         $set: req.body
       }
       const result = await assignmentCollection.updateOne(filter, body);
+      res.send(result);
+    })
+    app.delete('/assignments/:id', verify, async(req, res) => {
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const result = await assignmentCollection.deleteOne(filter);
       res.send(result);
     })
 
