@@ -75,6 +75,15 @@ async function run() {
       const result = await assignmentCollection.insertOne(req.body);
       res.send(result);
     })
+    app.put('/assignments/:id', verify, async(req, res) => {
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const body = {
+        $set: req.body
+      }
+      const result = await assignmentCollection.updateOne(filter, body);
+      res.send(result);
+    })
 
     app.get('/submitted-assignments', verify, async(req, res) => {
       const filter = {status: "pending"};
