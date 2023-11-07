@@ -11,7 +11,6 @@ const port = process.env.PORT || 5001;
 app.use(express.json());
 app.use(cors({
   origin: [
-    // 'http://localhost:5173',
     'https://study-hub-1.web.app'
   ],
   credentials: true
@@ -63,7 +62,8 @@ async function run() {
       if (req.query.level !== "All") {
         filter = {difficultyLevel: req.query.level};
       }
-      const result = await assignmentCollection.find(filter).project({_id: 1, thumbnail: 1, title: 1, marks: 1, difficultyLevel: 1, author: 1}).toArray();
+      const result = await assignmentCollection.find(filter).project({_id: 1, thumbnail: 1, title: 1, marks: 1, difficultyLevel: 1, author: 1}).skip(req.query.skip * req.query.limit).limit(parseInt(req.query.limit)).toArray();
+      console.log(req.query.skip * req.query.limit, req.query.limit);
       res.send(result);
     })
     app.get('/assignments/:id', verify, async(req, res) => {
@@ -89,6 +89,14 @@ async function run() {
       const filter = {_id: new ObjectId(id)};
       const result = await assignmentCollection.deleteOne(filter);
       res.send(result);
+    })
+    app.get('/assignments-count', async(req, res) => {
+      let filter = {}
+      if (req.query.level !== "All") {
+        filter = {difficultyLevel: req.query.level};
+      }
+      const result = await assignmentCollection.countDocuments(filter);
+      res.send(result + '');
     })
 
     app.get('/submitted-assignments', verify, async(req, res) => {
