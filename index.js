@@ -63,7 +63,6 @@ async function run() {
         filter = {difficultyLevel: req.query.level};
       }
       const result = await assignmentCollection.find(filter).project({_id: 1, thumbnail: 1, title: 1, marks: 1, difficultyLevel: 1, author: 1}).skip(req.query.skip * req.query.limit).limit(parseInt(req.query.limit)).toArray();
-      console.log(req.query.skip * req.query.limit, req.query.limit);
       res.send(result);
     })
     app.get('/assignments/:id', verify, async(req, res) => {
